@@ -1,4 +1,5 @@
 import 'package:challenge_app/tools/buttons_info.dart';
+import 'package:challenge_app/tools/dimens_extension.dart';
 import 'package:challenge_app/tools/path_icons.dart';
 import 'package:challenge_app/widgets/custom_app_bar.dart';
 import 'package:challenge_app/widgets/custom_text.dart';
@@ -13,7 +14,35 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool isExpanded = false;
+  double _height = 400.0;
+  late double _minHeight;
+  late double _maxHeight;
+
+  @override
+  void didChangeDependencies() {
+    _maxHeight = context.height(.88);
+    _minHeight = context.height(.5);
+    super.didChangeDependencies();
+  }
+
+  void _onDragUpdate(DragUpdateDetails details) {
+    setState(() {
+      _height -= details.delta.dy;
+      _height = _height.clamp(_minHeight, _maxHeight);
+    });
+  }
+
+  void _onDragEnd(DragEndDetails details) {
+    if (_height > (_maxHeight + _minHeight) / 2) {
+      setState(() {
+        _height = _maxHeight;
+      });
+    } else {
+      setState(() {
+        _height = _minHeight;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,21 +67,18 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               GestureDetector(
-                onTap: () {
-                  setState(() {
-                    isExpanded = !isExpanded;
-                  });
-                },
+                onVerticalDragUpdate: _onDragUpdate,
+                onVerticalDragEnd: _onDragEnd,
                 child: AnimatedContainer(
                   width: double.infinity,
-                  height: isExpanded ? 400 : 640,
+                  height: _height,
                   padding: const EdgeInsets.only(left: 16, right: 16, top: 30),
                   decoration: const BoxDecoration(
                       borderRadius:
                           BorderRadius.vertical(top: Radius.circular(24)),
                       gradient: LinearGradient(
                           colors: [Color(0XFF2A2D32), Color(0XFF23262A)])),
-                  duration: const Duration(seconds: 1),
+                  duration: const Duration(milliseconds: 200),
                   child: const SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
